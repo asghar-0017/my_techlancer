@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 dotenv.config();
-const dataInRepo=require('../Repository/clientRepo')
 
 const sendMessageTOService = async (bodyData) => {
     const transporter = nodemailer.createTransport({
@@ -38,12 +37,11 @@ const sendMessageTOService = async (bodyData) => {
     };
 
     try {
-        const saveInDb=await dataInRepo(bodyData)
+        // Send both emails
         const clientInfo = await transporter.sendMail(clientMailOptions);
         const adminInfo = await transporter.sendMail(adminMailOptions);
 
         return {
-            data:saveInDb,
             clientMessageId: clientInfo.messageId,
             adminMessageId: adminInfo.messageId,
             previewUrl: nodemailer.getTestMessageUrl(adminInfo), 
