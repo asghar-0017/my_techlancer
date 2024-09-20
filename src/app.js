@@ -2,23 +2,23 @@ const express = require("express");
 const { ConnectDB } = require("./infrastructure/index.js");
 const Routes = require("./routes/clientRoutes.js");
 const app = express();
-const dotenv=require('dotenv')
-dotenv.config()
+const dotenv = require('dotenv');
+dotenv.config();
 
 app.use(express.json());
-  app.use(express.urlencoded({ extended: true })); 
-  
-  Routes(app);
-  
-  app.get("/", (req, res) => {
-    res.send("hello world");
-  });
+app.use(express.urlencoded({ extended: true }));
 
-const start = ()=>{
-    ConnectDB()
+Routes(app);
+
+app.get("/", (req, res) => {
+  res.json({ message: "Hello, world!" });
+});
+
+const start = () => {
+  ConnectDB()
     .then(() => {
-      app.listen(process.env.PORT, (req, res) => {
-        console.log("server is running on port 3000");
+      app.listen(process.env.PORT, () => {
+        console.log(`Server is running on port ${process.env.PORT}`);
       });
     })
     .catch((err) => {
@@ -26,6 +26,4 @@ const start = ()=>{
     });
 }
 
-  
-
-module.exports= {start}
+module.exports = { start };
