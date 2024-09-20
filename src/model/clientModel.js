@@ -7,21 +7,15 @@ const ClientSchema = new mongoose.Schema({
   email:{
     type:String
   },
-  token:{
-    type:String
-  },
-  code:{
+  subject:{
     type:String
   },
   phone:{
     type:Number
   },
-  gender:{
+  message:{
     type:String
   },
-  password:{
-    type:String
-    }
 })
 
 module.exports = ClientModel = mongoose.model("Client",ClientSchema)

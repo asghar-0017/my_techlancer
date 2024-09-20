@@ -1,45 +1,81 @@
-const jwt = require("jsonwebtoken"); // Use the correct package
 const nodemailer = require('nodemailer');
-const generateToken = (userId) => {
-    return jwt.sign({ email: userId }, "yehlay", { expiresIn: '1h' });
+const dataInRepo = require('../Repository/clientRepo'); 
+
+// Create a reusable transporter
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: 'fa21bscs0006@maju.edu.pk',
+    pass: 'lskm edsk xwkx opfc',  // Use environment variables for security in production
+  },
+});
+
+// Main service function to handle message sending and email notifications
+const sendMessageTOService = async (data) => {
+  try {
+    const clientData = await dataInRepo(data); // Save client data in the repository
+    if (clientData) {
+      await Promise.all([
+        sendEmailToClient(clientData.email, clientData.name),
+        sendEmailToAdmin(clientData)
+      ]);
+      console.log('Data saved and emails sent successfully.');
+    }
+  } catch (error) {
+    console.error('Error in sending message to service:', error);
+  }
 };
 
-
-const sendEmail =async (usermail,code)=>{
-    const resetUrl = `http://localhost:3000/reset-password?email=${encodeURIComponent(usermail)}`;
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // or 'STARTTLS'
-        auth: {
-            user: 'fa21bscs0006@maju.edu.pk',
-            pass: "lskm edsk xwkx opfc",
-        }
-    });
-
-    const htmlContent = `
-    <div style="font-family: Arial, sans-serif;">
-        <h2>Reset Your Password</h2>
-        <p>Click the link below to reset your password:</p>
-        <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Reset Password</a>
-        <p>If you didn’t request this password reset, you can safely ignore this email.</p>
+// Function to send a professional thank-you email to the client
+const sendEmailToClient = async (clientEmail, clientName) => {
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; color: #333;">
+      <h3 style="color: #0056b3;">Dear ${clientName},</h3>
+      <p>Thank you for contacting us. We have successfully received your message, and one of our representatives will get back to you shortly.</p>
+      <p>If you have any additional questions, feel free to reply to this email or contact us at <a href="mailto:fa21bscs0006@maju.edu.pk">fa21bscs0006@maju.edu.pk</a>.</p>
+      <p>Best Regards,<br>My-Techlancer Team</p>
     </div>
-    `;
+  `;
 
-    try {
-        await transporter.sendMail({
-            from: 'yehlay@gmail.com',
-            to: usermail,
-            subject: 'Password Reset Request',
-            html: htmlContent,
-        });
+  try {
+    await transporter.sendMail({
+      from: 'fa21bscs0006@maju.edu.pk',
+      to: clientEmail,
+      subject: 'Thank you for contacting My-Techlancer!',
+      html: htmlBody,
+    });
+    console.log('Thank-you email sent to:', clientEmail);
+  } catch (error) {
+    console.error('Error sending thank-you email to client:', error);
+  }
+};
 
-        console.log('Reset email sent to:', usermail);
-    } catch (error) {
-        console.error("Error sending email:", error);
-    }
+// Function to notify the admin with client details
+const sendEmailToAdmin = async (clientData) => {
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; color: #333;">
+      <h3 style="color: #d9534f;">New Contact Form Submission</h3>
+      <p><strong>Name:</strong> ${clientData.name}</p>
+      <p><strong>Email:</strong> ${clientData.email}</p>
+      <p><strong>Phone:</strong> ${clientData.phone}</p>
+      <p><strong>Subject:</strong> ${clientData.subject}</p>
+      <p><strong>Message:</strong> ${clientData.message}</p>
+    </div>
+  `;
 
-          
-  
-  };
-module.exports = { generateToken,sendEmail };
+  try {
+    await transporter.sendMail({
+      from: 'fa21bscs0006@maju.edu.pk',
+      to: 'rajaasgharali009@gmail.com', // Admin email
+      subject: `New Message from ${clientData.name}`,
+      html: htmlBody,
+    });
+    console.log('Email with client details sent to admin.');
+  } catch (error) {
+    console.error('Error sending email to admin:', error);
+  }
+};
+
+module.exports = { sendMessageTOService };
