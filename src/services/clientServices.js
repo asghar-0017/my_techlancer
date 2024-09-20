@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 dotenv.config();
-const dataInRepo = require('../Repository/clientRepo'); 
+// const dataInRepo = require('../Repository/clientRepo'); 
 
 
 
@@ -41,7 +41,7 @@ const sendMessageTOService = async (bodyData) => {
 
     try {
         // Send both emails
-        const savedContact = await dataInRepo(bodyData);
+        // const savedContact = await dataInRepo(bodyData);
         const clientInfo = await transporter.sendMail(clientMailOptions);
         const adminInfo = await transporter.sendMail(adminMailOptions);
 
