@@ -1,5 +1,5 @@
 const express = require("express");
-// const { ConnectDB } = require("./infrastructure/index.js");
+const { ConnectDB } = require("./infrastructure/index.js");
 const Routes = require("./routes/clientRoutes.js");
 const app = express();
 const dotenv = require('dotenv');
@@ -15,18 +15,16 @@ app.get("/", (req, res) => {
 })
 
 const start = () => {
-  // ConnectDB()
-  //   .then(() => {
-  //     app.listen(process.env.PORT, () => {
-  //       console.log(`Server is running on port ${process.env.PORT}`);
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     console.log(err);
-  //   });
-  app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
-  });
+  ConnectDB()
+    .then(() => {
+      app.listen(process.env.PORT, () => {
+        console.log(`Server is running on port ${process.env.PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
 }
 
 
