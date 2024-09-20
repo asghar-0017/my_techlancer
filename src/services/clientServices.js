@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 const dataInRepo = require('../Repository/clientRepo'); 
+const dotenv=require('dotenv')
+dotenv.config()
 
 // Create a reusable transporter
 const transporter = nodemailer.createTransport({
@@ -7,8 +9,8 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: 'fa21bscs0006@maju.edu.pk',
-    pass: 'lskm edsk xwkx opfc',  // Use environment variables for security in production
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD, // Use environment variables for security in production
   },
 });
 
@@ -41,7 +43,7 @@ const sendEmailToClient = async (clientEmail, clientName) => {
 
   try {
     await transporter.sendMail({
-      from: 'fa21bscs0006@maju.edu.pk',
+      from: process.env.EMAIL,
       to: clientEmail,
       subject: 'Thank you for contacting My-Techlancer!',
       html: htmlBody,
@@ -52,7 +54,6 @@ const sendEmailToClient = async (clientEmail, clientName) => {
   }
 };
 
-// Function to notify the admin with client details
 const sendEmailToAdmin = async (clientData) => {
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; color: #333;">
@@ -67,8 +68,8 @@ const sendEmailToAdmin = async (clientData) => {
 
   try {
     await transporter.sendMail({
-      from: 'fa21bscs0006@maju.edu.pk',
-      to: 'rajaasgharali009@gmail.com', // Admin email
+      from: process.env.EMAIL,
+      to: process.env.ADMIN_EMAIL, 
       subject: `New Message from ${clientData.name}`,
       html: htmlBody,
     });
