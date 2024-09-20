@@ -1,82 +1,60 @@
 const nodemailer = require('nodemailer');
+const dotenv = require('dotenv');
+dotenv.config();
 const dataInRepo = require('../Repository/clientRepo'); 
-const dotenv=require('dotenv')
-dotenv.config()
 
-// Create a reusable transporter
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASSWORD, // Use environment variables for security in production
-  },
-});
 
-// Main service function to handle message sending and email notifications
-const sendMessageTOService = async (data) => {
-  try {
-    const clientData = await dataInRepo(data); // Save client data in the repository
-    if (clientData) {
-      await Promise.all([
-        sendEmailToClient(clientData.email, clientData.name),
-        sendEmailToAdmin(clientData)
-      ]);
-      console.log('Data saved and emails sent successfully.');
+
+const sendMessageTOService = async (bodyData) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL, 
+            pass: process.env.PASSWORD, 
+        },
+    });
+
+    const clientMailOptions = {
+        from: process.env.EMAIL, 
+        to: bodyData.email,
+        subject: 'Thank you for your submission', 
+        text: `Hi ${bodyData.name},\n\nThank you for your message. We have received the following information:\n\nName: ${bodyData.name}\nEmail: ${bodyData.email}\nMessage: ${bodyData.message}\n\nWe will get back to you soon.`,
+        html: `<p>Hi <b>${bodyData.namr}</b>,</p>
+               <p>Thank you for your message. We have received the following information:</p>
+               <ul>
+                 <li><b>Name:</b> ${bodyData.name}</li>
+                 <li><b>Email:</b> ${bodyData.email}</li>
+                 <li><b>Message:</b> ${bodyData.message}</li>
+               </ul>
+               <p>We will get back to you soon.</p>`,
+    };
+
+    const adminMailOptions = {
+        from: process.env.EMAIL, // Sender address
+        to: process.env.ADMIN_EMAIL, // Recipient address (admin)
+        subject: 'New Contact Form Submission', // Subject line
+        text: `You have a new contact form submission from ${bodyData.name}.\n\nMessage: ${bodyData.message}\n\nClient Email: ${bodyData.email}`,
+        html: `<p>You have a new contact form submission from <b>${bodyData.name}</b>.</p>
+               <p>Message: ${bodyData.message}</p>
+               <p>Client Email: ${bodyData.email}</p>`,
+    };
+
+    try {
+        // Send both emails
+        const savedContact = await dataInRepo(bodyData);
+        const clientInfo = await transporter.sendMail(clientMailOptions);
+        const adminInfo = await transporter.sendMail(adminMailOptions);
+
+        return {
+            savedContact,
+            clientMessageId: clientInfo.messageId,
+            adminMessageId: adminInfo.messageId,
+            previewUrl: nodemailer.getTestMessageUrl(adminInfo), 
+        };
+    } catch (error) {
+        console.error('Error sending emails:', error);
+
     }
-  } catch (error) {
-    console.error('Error in sending message to service:', error);
-  }
 };
 
-// Function to send a professional thank-you email to the client
-const sendEmailToClient = async (clientEmail, clientName) => {
-  const htmlBody = `
-    <div style="font-family: Arial, sans-serif; color: #333;">
-      <h3 style="color: #0056b3;">Dear ${clientName},</h3>
-      <p>Thank you for contacting us. We have successfully received your message, and one of our representatives will get back to you shortly.</p>
-      <p>If you have any additional questions, feel free to reply to this email or contact us at <a href="mailto:fa21bscs0006@maju.edu.pk">fa21bscs0006@maju.edu.pk</a>.</p>
-      <p>Best Regards,<br>My-Techlancer Team</p>
-    </div>
-  `;
-
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL,
-      to: clientEmail,
-      subject: 'Thank you for contacting My-Techlancer!',
-      html: htmlBody,
-    });
-    console.log('Thank-you email sent to:', clientEmail);
-  } catch (error) {
-    console.error('Error sending thank-you email to client:', error);
-  }
-};
-
-const sendEmailToAdmin = async (clientData) => {
-  const htmlBody = `
-    <div style="font-family: Arial, sans-serif; color: #333;">
-      <h3 style="color: #d9534f;">New Contact Form Submission</h3>
-      <p><strong>Name:</strong> ${clientData.name}</p>
-      <p><strong>Email:</strong> ${clientData.email}</p>
-      <p><strong>Phone:</strong> ${clientData.phone}</p>
-      <p><strong>Subject:</strong> ${clientData.subject}</p>
-      <p><strong>Message:</strong> ${clientData.message}</p>
-    </div>
-  `;
-
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL,
-      to: process.env.ADMIN_EMAIL, 
-      subject: `New Message from ${clientData.name}`,
-      html: htmlBody,
-    });
-    console.log('Email with client details sent to admin.');
-  } catch (error) {
-    console.error('Error sending email to admin:', error);
-  }
-};
-
-module.exports = { sendMessageTOService };
+module.exports = sendMessageTOService;

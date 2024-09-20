@@ -1,4 +1,4 @@
-const { sendMessageTOService } = require("../services/clientServices");
+const  sendMessageTOService  = require("../services/clientServices");
 
 const sendMessage = async (req, res) => {
   try {
