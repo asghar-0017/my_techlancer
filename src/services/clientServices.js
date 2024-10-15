@@ -66,7 +66,7 @@ const sendSubscriptionToService = async (bodyData) => {
             user: 'fa21bscs0017@maju.edu.pk',
             pass: 'gutz sdgf umxn bxqf',
         },
-    });
+    })
 
     const clientMailOptions = {
         from: `"My Techlancer" <${process.env.EMAIL}>`, 
