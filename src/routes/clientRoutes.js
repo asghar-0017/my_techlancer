@@ -6,6 +6,6 @@ const Routes = (app) => {
   app.post("/send-message", sendMessage);
   app.post("/Subscription", subscription);
   
-};
+}
 
-module.exports = Routes; // Export the Routes function directly, not as an object
+module.exports = Routes;
