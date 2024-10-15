@@ -63,8 +63,8 @@ const sendSubscriptionToService = async (bodyData) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: process.env.EMAIL,
-            pass: process.env.PASSWORD,
+            user: 'fa21bscs0017@maju.edu.pk',
+            pass: 'gutz sdgf umxn bxqf',
         },
     });
 
