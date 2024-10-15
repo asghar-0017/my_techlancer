@@ -59,4 +59,62 @@ const sendMessageTOService = async (bodyData) => {
     }
 };
 
-module.exports = sendMessageTOService;
+const sendSubscriptionToService = async (bodyData) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD,
+        },
+    });
+
+    const clientMailOptions = {
+        from: `"My Techlancer" <${process.env.EMAIL}>`, 
+        to: bodyData.email, 
+        subject: 'Welcome to My Techlancer - Subscription Confirmed!',
+        html: `
+            <div style="font-family: Arial, sans-serif; color: #333;">
+                <h1 style="color: #007BFF;">Thank you for subscribing!</h1>
+                <p>Hi,</p>
+                <p>We're thrilled to have you on board. Stay tuned for exciting updates, exclusive content, and the latest news from <b>My Techlancer</b>.</p>
+                <p>You'll be the first to know about:</p>
+                <ul>
+                    <li>New features</li>
+                    <li>Special offers</li>
+                    <li>Latest tech insights</li>
+                </ul>
+                <p>If you have any questions, feel free to reach out to us at <a href="mailto:${process.env.ADMIN_EMAIL}" style="color: #007BFF;">${process.env.EMAIL}</a>.</p>
+                <p>Best Regards,<br><b>My Techlancer Team</b></p>
+            </div>`,
+    };
+
+    const adminMailOptions = {
+        from: `"My Techlancer" <${process.env.EMAIL}>`,
+        to: process.env.ADMIN_EMAIL, 
+        subject: 'New Subscription',
+        text: `A new subscription has been received from ${bodyData.email}.`,
+        html: `
+            <p>A new subscription has been received from:</p>
+            <ul>
+                <li><b>Email:</b> ${bodyData.email}</li>
+            </ul>
+            <p>Please ensure they receive timely updates and newsletters.</p>`,
+    };
+
+    try {
+        const clientInfo = await transporter.sendMail(clientMailOptions);
+        const adminInfo = await transporter.sendMail(adminMailOptions);
+
+        return {
+            clientMessageId: clientInfo.messageId,
+            adminMessageId: adminInfo.messageId,
+            previewUrl: nodemailer.getTestMessageUrl(adminInfo),
+        };
+    } catch (error) {
+        console.error('Error sending emails:', error);
+        throw error;
+    }
+};
+
+
+module.exports = {sendMessageTOService,sendSubscriptionToService}
